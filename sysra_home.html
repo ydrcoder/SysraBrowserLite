@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sysra Arama</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    background-color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    color: #202124;
+    padding-top: 80px;
+  }
+  #logo {
+    width: 272px;
+    margin-bottom: 30px;
+    user-select: none;
+  }
+  form {
+    display: flex;
+    max-width: 584px;
+    width: 100%;
+    border: 1px solid #dfe1e5;
+    border-radius: 24px;
+    box-shadow: 0 1px 6px rgba(32,33,36,.28);
+    overflow: hidden;
+  }
+  input[type="text"] {
+    flex-grow: 1;
+    font-size: 16px;
+    padding: 0 16px;
+    height: 44px;
+    border: none;
+    outline: none;
+  }
+  input[type="text"]::placeholder {
+    color: #9aa0a6;
+  }
+  button {
+    background: #f8f9fa;
+    border: none;
+    border-left: 1px solid #dfe1e5;
+    padding: 0 20px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #3c4043;
+    transition: background-color 0.2s ease;
+  }
+  button:hover {
+    background: #f1f3f4;
+  }
+
+  /* Dark mode styles */
+  body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+  body.dark-mode form {
+    border-color: #444;
+    box-shadow: 0 1px 6px rgba(255,255,255,0.15);
+  }
+  body.dark-mode input[type="text"] {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+  }
+  body.dark-mode button {
+    background-color: #2d2d2d;
+    color: #ccc;
+    border-left: 1px solid #444;
+  }
+  body.dark-mode button:hover {
+    background-color: #3a3a3a;
+  }
+</style>
+</head>
+<body>
+
+<img id="logo" src="icon.png" alt="Sysra Logo" />
+
+<form id="searchForm">
+  <input type="text" id="searchInput" placeholder="Ara veya URL yaz..." autocomplete="off" />
+  <button type="submit">Ara</button>
+</form>
+
+<script>
+document.getElementById('searchForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const val = document.getElementById('searchInput').value.trim();
+
+  if (!val) return;
+
+  const urlPattern = /^https?:\/\//i;
+  if (urlPattern.test(val)) {
+    window.location.href = val;
+  } else if (val.includes('.') && !val.includes(' ')) {
+    window.location.href = 'http://' + val;
+  } else {
+    const q = encodeURIComponent(val);
+    window.location.href = 'https://www.google.com/search?q=' + q;
+  }
+});
+
+// Dark mode toggle from Python, listens for message
+window.addEventListener("message", (event) => {
+  if(event.data === "dark-mode-on"){
+    document.body.classList.add("dark-mode");
+  }
+  if(event.data === "dark-mode-off"){
+    document.body.classList.remove("dark-mode");
+  }
+});
+</script>
+
+</body>
+</html>
