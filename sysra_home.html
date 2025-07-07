@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sysra Arama</title>
+<title>Sysra Browser Lite 2.0</title>
 <style>
   html, body {
     height: 100%;
     margin: 0;
-    background-color: #fff;
+    background-color: #ffffff;
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
@@ -43,9 +43,9 @@
     color: #9aa0a6;
   }
   button {
-    background: #f8f9fa;
+    background: #ffffff;
     border: none;
-    border-left: 1px solid #dfe1e5;
+    border-left: 1px solid #ffffff;
     padding: 0 20px;
     cursor: pointer;
     font-size: 14px;
@@ -53,7 +53,7 @@
     transition: background-color 0.2s ease;
   }
   button:hover {
-    background: #f1f3f4;
+    background: #ffffff;
   }
 
   /* Dark mode styles */
@@ -84,8 +84,8 @@
 <img id="logo" src="icon.png" alt="Sysra Logo" />
 
 <form id="searchForm">
-  <input type="text" id="searchInput" placeholder="Ara veya URL yaz..." autocomplete="off" />
-  <button type="submit">Ara</button>
+  <input type="text" id="searchInput" placeholder="Search or type a URL..." autocomplete="off" />
+  <button type="submit">Search</button>
 </form>
 
 <script>
@@ -102,7 +102,7 @@ document.getElementById('searchForm').addEventListener('submit', function(e){
     window.location.href = 'http://' + val;
   } else {
     const q = encodeURIComponent(val);
-    window.location.href = 'https://www.google.com/search?q=' + q;
+    window.location.href = 'https://duckduckgo.com/?t=h_&q=' + q;
   }
 });
 
