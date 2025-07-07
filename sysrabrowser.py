@@ -49,15 +49,15 @@ class BrowserTab(QWidget):
         url = self.url_bar.text().strip()
         if not url:
             return
-        # Tam URL mi kontrol et
+        # Is this URL?
         if url.startswith("http://") or url.startswith("https://"):
             self.browser.setUrl(QUrl(url))
         else:
-            # Nokta varsa ve boşluk yoksa domain gibi kabul et
+            # Domain System
             if '.' in url and ' ' not in url:
                 self.browser.setUrl(QUrl("https://" + url))
             else:
-                # Arama yap DuckDuckGo üzerinden
+                # DuckDuckGo Search
                 arama = url.replace(' ', '+')
                 self.browser.setUrl(QUrl(f"https://duckduckgo.com/?q={arama}"))
 
@@ -71,20 +71,20 @@ class BrowserTab(QWidget):
 class AccountPanel(QDialog):
     def __init__(self, parent, username):
         super().__init__(parent)
-        self.setWindowTitle("Hesap Paneli")
+        self.setWindowTitle("Account Panel")
         self.setMinimumSize(300, 200)
         self.username = username
 
         layout = QVBoxLayout()
-        user_label = QLabel(f"Kullanıcı: <b>{self.username}</b>")
+        user_label = QLabel(f"User: <b>{self.username}</b>")
         layout.addWidget(user_label)
 
         if self.username == "ydrc":
-            admin_btn = QPushButton("Yönetici Paneli")
+            admin_btn = QPushButton("Admin Panel")
             admin_btn.clicked.connect(self.open_admin_panel)
             layout.addWidget(admin_btn)
 
-        close_btn = QPushButton("Kapat")
+        close_btn = QPushButton("Close")
         close_btn.clicked.connect(self.close)
         layout.addWidget(close_btn)
 
@@ -92,12 +92,12 @@ class AccountPanel(QDialog):
 
     def open_admin_panel(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle("Yönetici Paneli")
+        dialog.setWindowTitle("Admin Panel")
         dialog.setMinimumSize(300, 150)
 
         layout = QVBoxLayout()
 
-        devtools_button = QPushButton("Geliştirici Konsolunu Aç")
+        devtools_button = QPushButton("Open Dev Tools")
         devtools_button.clicked.connect(lambda: self.open_dev_tools(dialog))
         layout.addWidget(devtools_button)
 
@@ -108,7 +108,7 @@ class AccountPanel(QDialog):
         main_window = self.parent()
         if not hasattr(main_window, 'dev_tools'):
             main_window.dev_tools = QWebEngineView()
-            main_window.dev_tools.setWindowTitle("Geliştirici Konsolu")
+            main_window.dev_tools.setWindowTitle("Dev Console")
             main_window.dev_tools.resize(900, 700)
 
         current_tab = main_window.tabs.currentWidget()
@@ -120,9 +120,9 @@ class AccountPanel(QDialog):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, username="Anonim"):
+    def __init__(self, username="No account"):
         super().__init__()
-        self.setWindowTitle("Sysra Web Tarayıcı")
+        self.setWindowTitle("Sysra Browser Lite")
         self.setGeometry(100, 100, 1200, 800)
         self.username = username
 
@@ -144,9 +144,9 @@ class MainWindow(QMainWindow):
 
         menubar = self.menuBar()
 
-        dosya_menu = menubar.addMenu("Dosya")
+        dosya_menu = menubar.addMenu("File")
 
-        ozellestir_action = QAction("Sysra’yı Özelleştir", self)
+        ozellestir_action = QAction("Customize Sysra", self)
         ozellestir_action.triggered.connect(self.customize)
         dosya_menu.addAction(ozellestir_action)
 
@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
         self.account_btn.setPopupMode(QToolButton.InstantPopup)
 
         account_menu = QMenu()
-        hesap_paneli_action = QAction("Hesap Paneli", self)
+        hesap_paneli_action = QAction("Account Panel", self)
         hesap_paneli_action.triggered.connect(self.open_account_panel)
         account_menu.addAction(hesap_paneli_action)
 
@@ -175,13 +175,13 @@ class MainWindow(QMainWindow):
 
         # Durum çubuğu
         if self.username == "ydrc":
-            self.statusBar().showMessage(f"🛡 Giriş Yapan: {self.username} | Yönetici Modu Aktif")
+            self.statusBar().showMessage(f"🛡 Login: {self.username} | Admin Mode : Active")
         else:
-            self.statusBar().showMessage(f"Giriş Yapan: {self.username}")
+            self.statusBar().showMessage(f"Login: {self.username}")
 
     def add_new_tab(self):
         new_tab = BrowserTab()
-        self.tabs.addTab(new_tab, "Yeni Sekme")
+        self.tabs.addTab(new_tab, "New Tab")
         self.tabs.setCurrentWidget(new_tab)
 
     def close_tab(self, index):
@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
             self.tabs.removeTab(index)
 
     def customize(self):
-        QMessageBox.information(self, "Özelleştirme", "Tema ve ayarlar yakında eklenecek.")
+        QMessageBox.information(self, "Customize", "Themes and options are coming soon.")
 
     def open_account_panel(self):
         panel = AccountPanel(self, self.username)
@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    kullanici = sys.argv[1] if len(sys.argv) > 1 else "Anonim"
+    kullanici = sys.argv[1] if len(sys.argv) > 1 else "No account"
 
     pencere = MainWindow(username=kullanici)
     pencere.show()
