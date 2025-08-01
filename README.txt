@@ -1,40 +1,61 @@
-# Sysra Browser Lite
+Sysra Browser Lite 3.0
+Sysra Browser Lite 3.0 is a lightweight, customizable web browser built with Python and PyQt5. It features tabbed browsing, built-in translation, notes, and calculator plugins — all integrated into a sleek and minimal interface.
 
-Sysra Browser Lite, hızlı, güvenli ve sade bir Python tabanlı web tarayıcısıdır.  
-PyQt5 ve Qt WebEngine kullanılarak geliştirilmiştir. Kullanıcı hesabı sistemi ve yönetici paneli gibi temel özellikleri içerir.
+Features
+Tabbed browsing with back, forward, and reload controls
 
----
+URL/search bar supporting direct URLs and DuckDuckGo search queries
 
-## Özellikler
+Integrated Plugins:
 
-- Çoklu sekme desteği  
-- URL çubuğu ile hızlı gezinme  
-- Yönetici ve kullanıcı hesapları  
-- DuckDuckGo ve Google arama motoru varsayılan  
-- Basit ve şık arayüz 
-- Anonim olarak internette gezinme
-- Otomatik olarak açılan VPN ile korsanlara karşı 1 adım önde olun. 
+Sysra Translate: Supports multiple languages with instant translation
 
----
+Sysra Notes: Persistent note-taking tool saved locally
 
-## Kurulum ve Kullanım
+Sysra Calculator: Basic calculator supporting addition, subtraction, multiplication, and division
 
-1. Python 3.7+ kurulu olmalı.  
-2. Gerekli kütüphaneleri yükleyin:  
-   ```bash
-   pip install PyQt5 PyQtWebEngine
-Proje dosyalarını indirin veya klonlayın.
+Light and Red themes for comfortable viewing
 
-Komut satırında proje klasörüne gidin ve:
+Easy tab management with closable tabs and a quick new tab button
+
+Installation
+Make sure you have Python 3.6+ installed.
+
+Install dependencies:
+
+bash
+Kopyala
+Düzenle
+pip install PyQt5 PyQtWebEngine deep-translator
+Clone or download the repository.
+
+Run the main application:
+
+bash
+Kopyala
+Düzenle
 python sysrabrowser.py
-Tarayıcı açılacaktır.
+Usage
+Enter URLs or search queries directly into the address bar.
 
+Use the plugin panel on the right to translate text, take notes, or perform calculations without leaving the browser.
 
-Katkıda Bulunmak İster misiniz?
-Projeye katkılarınızı bekliyoruz! Bug raporları, öneriler ve pull requestler için açığız.
+Save notes locally — they persist between sessions.
 
-Not / Note for non-Turkish speakers
-This project is primarily in Turkish.
-We apologize for the inconvenience and will release an English version soon.
-Thank you for your understanding!
+Change the theme from the menu bar for a different look.
+
+Open new tabs with the + button, close tabs by clicking the x on each tab.
+
+File Structure
+sysrabrowser.py - Main application source code
+
+sysra_home.html - Homepage HTML file loaded on new tabs
+
+sysra_notes.txt - Local file storing saved notes
+
+Contributing
+Contributions are welcome! Feel free to submit issues or pull requests on GitHub.
+
+License
+This project is licensed under the MIT License.
 
