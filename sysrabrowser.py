@@ -1,207 +1,256 @@
-import sys
-import os
+import sys, os
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout,
-    QHBoxLayout, QPushButton, QLineEdit, QLabel, QAction,
-    QMessageBox, QDialog, QToolButton, QMenu, QSpacerItem, QSizePolicy
+    QHBoxLayout, QPushButton, QLineEdit, QTextEdit, QLabel,
+    QComboBox, QSplitter, QMessageBox
 )
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl, Qt
+from deep_translator import GoogleTranslator
+
+NOTES_FILE = "sysra_notes.txt"
 
 
 class BrowserTab(QWidget):
     def __init__(self):
         super().__init__()
-        self.layout = QVBoxLayout()
+        layout = QVBoxLayout()
         self.browser = QWebEngineView()
-
-        homepage_path = os.path.join(os.path.dirname(__file__), "sysra_home.html")
-        self.browser.setUrl(QUrl.fromLocalFile(homepage_path))
+        homepage = os.path.join(os.path.dirname(__file__), "sysra_home.html")
+        self.browser.setUrl(QUrl.fromLocalFile(homepage))
 
         self.url_bar = QLineEdit()
-        self.url_bar.returnPressed.connect(self.navigate_to_url)
+        self.url_bar.setPlaceholderText("Enter URL or search query...")
+        self.url_bar.returnPressed.connect(self.navigate)
 
-        nav_layout = QHBoxLayout()
-        self.back_button = QPushButton("←")
-        self.back_button.setFixedWidth(30)
-        self.back_button.clicked.connect(self.browser.back)
+        nav = QHBoxLayout()
+        for sym, func in [("←", self.browser.back), ("→", self.browser.forward), ("⟳", self.browser.reload)]:
+            btn = QPushButton(sym)
+            btn.setFixedWidth(30)
+            btn.clicked.connect(func)
+            nav.addWidget(btn)
 
-        self.forward_button = QPushButton("→")
-        self.forward_button.setFixedWidth(30)
-        self.forward_button.clicked.connect(self.browser.forward)
+        nav.addWidget(self.url_bar)
+        layout.addLayout(nav)
+        layout.addWidget(self.browser)
+        self.setLayout(layout)
 
-        self.reload_button = QPushButton("⟳")
-        self.reload_button.setFixedWidth(30)
-        self.reload_button.clicked.connect(self.browser.reload)
+        self.browser.urlChanged.connect(lambda u: self.url_bar.setText(u.toString()))
+        self.browser.titleChanged.connect(lambda t: self.update_tab_title(t))
 
-        nav_layout.addWidget(self.back_button)
-        nav_layout.addWidget(self.forward_button)
-        nav_layout.addWidget(self.reload_button)
-        nav_layout.addWidget(self.url_bar)
+    def update_tab_title(self, title):
+        parent = self.parentWidget()
+        if parent:
+            main_window = parent.parentWidget()
+            if main_window and hasattr(main_window, "tabs"):
+                index = main_window.tabs.indexOf(self)
+                if index != -1:
+                    main_window.tabs.setTabText(index, title if title else "New Tab")
 
-        self.layout.addLayout(nav_layout)
-        self.layout.addWidget(self.browser)
-        self.setLayout(self.layout)
-
-        self.browser.urlChanged.connect(self.update_url)
-
-    def navigate_to_url(self):
-        url = self.url_bar.text().strip()
-        if not url:
+    def navigate(self):
+        val = self.url_bar.text().strip()
+        if not val:
             return
-        # Is this URL?
-        if url.startswith("http://") or url.startswith("https://"):
-            self.browser.setUrl(QUrl(url))
+        if val.startswith("http"):
+            url = val
+        elif "." in val and " " not in val:
+            url = "https://" + val
         else:
-            # Domain System
-            if '.' in url and ' ' not in url:
-                self.browser.setUrl(QUrl("https://" + url))
-            else:
-                # DuckDuckGo Search
-                arama = url.replace(' ', '+')
-                self.browser.setUrl(QUrl(f"https://duckduckgo.com/?q={arama}"))
-
-    def update_url(self, qurl):
-        self.url_bar.setText(qurl.toString())
-
-    def load_html(self, html):
-        self.browser.setHtml(html)
+            url = f"https://duckduckgo.com/?q={val.replace(' ', '+')}"
+        self.browser.setUrl(QUrl(url))
 
 
-class AccountPanel(QDialog):
-    def __init__(self, parent, username):
-        super().__init__(parent)
-        self.setWindowTitle("Account Panel")
-        self.setMinimumSize(300, 200)
-        self.username = username
-
+class TranslateWidget(QWidget):
+    def __init__(self):
+        super().__init__()
         layout = QVBoxLayout()
-        user_label = QLabel(f"User: <b>{self.username}</b>")
-        layout.addWidget(user_label)
+        self.label = QLabel("🌐 Sysra Translate")
+        self.label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(self.label)
 
-        if self.username == "ydrc":
-            admin_btn = QPushButton("Admin Panel")
-            admin_btn.clicked.connect(self.open_admin_panel)
-            layout.addWidget(admin_btn)
+        lang_h = QHBoxLayout()
+        self.from_lang = QComboBox()
+        self.to_lang = QComboBox()
+        langs = {"auto": "Detect", "en": "English", "tr": "Turkish", "de": "German", "fr": "French", "es": "Spanish"}
+        for code, name in langs.items():
+            self.from_lang.addItem(name, userData=code)
+            self.to_lang.addItem(name, userData=code)
+        self.from_lang.setCurrentIndex(0)
+        self.to_lang.setCurrentIndex(1)
+        lang_h.addWidget(self.from_lang)
+        lang_h.addWidget(QLabel("→"))
+        lang_h.addWidget(self.to_lang)
+        layout.addLayout(lang_h)
 
-        close_btn = QPushButton("Close")
-        close_btn.clicked.connect(self.close)
-        layout.addWidget(close_btn)
+        self.input = QTextEdit()
+        self.input.setPlaceholderText("Enter text to translate...")
+        layout.addWidget(self.input)
+
+        self.btn = QPushButton("Translate")
+        self.btn.clicked.connect(self.do_translate)
+        layout.addWidget(self.btn)
+
+        self.result = QTextEdit()
+        self.result.setReadOnly(True)
+        self.result.setPlaceholderText("Translation will appear here...")
+        layout.addWidget(self.result)
+
+        self.setLayout(layout)
+        self.translator = GoogleTranslator(source='auto', target='en')
+
+    def do_translate(self):
+        text = self.input.toPlainText().strip()
+        if not text:
+            self.result.setPlainText("⚠️ No text entered.")
+            return
+        src = self.from_lang.currentData()
+        tgt = self.to_lang.currentData()
+        try:
+            self.translator = GoogleTranslator(source=src, target=tgt)
+            translated = self.translator.translate(text)
+            self.result.setPlainText(translated)
+        except Exception as e:
+            self.result.setPlainText("Error: " + str(e))
+
+
+class NotesWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        self.label = QLabel("📝 Sysra Notes")
+        self.label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(self.label)
+
+        self.text_edit = QTextEdit()
+        layout.addWidget(self.text_edit)
+
+        self.save_btn = QPushButton("Save Notes")
+        self.save_btn.clicked.connect(self.save_notes)
+        layout.addWidget(self.save_btn)
 
         self.setLayout(layout)
 
-    def open_admin_panel(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Admin Panel")
-        dialog.setMinimumSize(300, 150)
+        self.load_notes()
 
+    def load_notes(self):
+        if os.path.exists(NOTES_FILE):
+            with open(NOTES_FILE, "r", encoding="utf-8") as f:
+                self.text_edit.setPlainText(f.read())
+
+    def save_notes(self):
+        with open(NOTES_FILE, "w", encoding="utf-8") as f:
+            f.write(self.text_edit.toPlainText())
+        QMessageBox.information(self, "Saved", "Notes saved successfully.")
+
+
+class CalculatorWidget(QWidget):
+    def __init__(self):
+        super().__init__()
         layout = QVBoxLayout()
 
-        devtools_button = QPushButton("Open Dev Tools")
-        devtools_button.clicked.connect(lambda: self.open_dev_tools(dialog))
-        layout.addWidget(devtools_button)
+        self.label = QLabel("🧮 Sysra Calculator")
+        self.label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(self.label)
 
-        dialog.setLayout(layout)
-        dialog.exec_()
+        input_layout = QHBoxLayout()
+        self.input1 = QLineEdit()
+        self.input1.setPlaceholderText("Number 1")
+        self.input2 = QLineEdit()
+        self.input2.setPlaceholderText("Number 2")
+        input_layout.addWidget(self.input1)
+        input_layout.addWidget(self.input2)
+        layout.addLayout(input_layout)
 
-    def open_dev_tools(self, dialog):
-        main_window = self.parent()
-        if not hasattr(main_window, 'dev_tools'):
-            main_window.dev_tools = QWebEngineView()
-            main_window.dev_tools.setWindowTitle("Dev Console")
-            main_window.dev_tools.resize(900, 700)
+        btn_layout = QHBoxLayout()
+        for sym, func in [("+", self.add), ("-", self.sub), ("*", self.mul), ("/", self.div)]:
+            btn = QPushButton(sym)
+            btn.clicked.connect(func)
+            btn_layout.addWidget(btn)
+        layout.addLayout(btn_layout)
 
-        current_tab = main_window.tabs.currentWidget()
-        if current_tab:
-            page = current_tab.browser.page()
-            main_window.dev_tools.setPage(page)
+        self.result = QLabel("Result: ")
+        self.result.setStyleSheet("font-size: 16px; font-weight: bold;")
+        layout.addWidget(self.result)
 
-        main_window.dev_tools.show()
+        self.setLayout(layout)
+
+    def get_inputs(self):
+        try:
+            num1 = float(self.input1.text())
+            num2 = float(self.input2.text())
+            return num1, num2
+        except ValueError:
+            QMessageBox.warning(self, "Input error", "Please enter valid numbers.")
+            return None, None
+
+    def add(self):
+        nums = self.get_inputs()
+        if nums is not None:
+            self.result.setText(f"Result: {nums[0] + nums[1]}")
+
+    def sub(self):
+        nums = self.get_inputs()
+        if nums is not None:
+            self.result.setText(f"Result: {nums[0] - nums[1]}")
+
+    def mul(self):
+        nums = self.get_inputs()
+        if nums is not None:
+            self.result.setText(f"Result: {nums[0] * nums[1]}")
+
+    def div(self):
+        nums = self.get_inputs()
+        if nums is not None:
+            if nums[1] == 0:
+                QMessageBox.warning(self, "Math error", "Cannot divide by zero.")
+            else:
+                self.result.setText(f"Result: {nums[0] / nums[1]}")
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, username="No account"):
+    def __init__(self, username="Guest"):
         super().__init__()
-        self.setWindowTitle("Sysra Browser Lite")
-        self.setGeometry(100, 100, 1200, 800)
-        self.username = username
+        self.setWindowTitle("Sysra Browser Lite 3.0")
+        self.setGeometry(50, 50, 1200, 800)
 
+        splitter = QSplitter(Qt.Horizontal)
         self.tabs = QTabWidget()
         self.tabs.setTabsClosable(True)
         self.tabs.tabCloseRequested.connect(self.close_tab)
+        splitter.addWidget(self.tabs)
 
-        self.setCentralWidget(self.tabs)
+        plugin_panel = QTabWidget()
+        plugin_panel.addTab(TranslateWidget(), "Translate")
+        plugin_panel.addTab(NotesWidget(), "Notes")
+        plugin_panel.addTab(CalculatorWidget(), "Calculator")
+        splitter.addWidget(plugin_panel)
 
-        # Yeni sekme açma butonu: sekmelerin sonunda
-        self.new_tab_button = QPushButton("+")
-        self.new_tab_button.setFixedWidth(30)
-        self.new_tab_button.clicked.connect(self.add_new_tab)
+        splitter.setSizes([900, 300])
+        self.setCentralWidget(splitter)
 
-        # Sekmelerin tab bar'ına buton eklemek için workaround:
-        self.tabs.setCornerWidget(self.new_tab_button, Qt.TopRightCorner)
+        plus = QPushButton("+")
+        plus.setFixedWidth(30)
+        plus.setToolTip("New Tab")
+        plus.clicked.connect(self.add_tab)
+        self.tabs.setCornerWidget(plus, Qt.TopRightCorner)
 
-        self.add_new_tab()
+        self.add_tab()
+        self.statusBar().showMessage(f"User: {username}")
 
-        menubar = self.menuBar()
+    def add_tab(self):
+        tab = BrowserTab()
+        self.tabs.addTab(tab, "New Tab")
+        self.tabs.setCurrentWidget(tab)
 
-        dosya_menu = menubar.addMenu("File")
-
-        ozellestir_action = QAction("Customize Sysra", self)
-        ozellestir_action.triggered.connect(self.customize)
-        dosya_menu.addAction(ozellestir_action)
-
-        # Sağ üst hesap butonu ve menü
-        top_right_widget = QWidget()
-        top_right_layout = QHBoxLayout()
-        top_right_layout.setContentsMargins(0, 0, 0, 0)
-        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        top_right_layout.addItem(spacer)
-
-        self.account_btn = QToolButton()
-        self.account_btn.setText(self.username)
-        self.account_btn.setPopupMode(QToolButton.InstantPopup)
-
-        account_menu = QMenu()
-        hesap_paneli_action = QAction("Account Panel", self)
-        hesap_paneli_action.triggered.connect(self.open_account_panel)
-        account_menu.addAction(hesap_paneli_action)
-
-        self.account_btn.setMenu(account_menu)
-
-        top_right_layout.addWidget(self.account_btn)
-        top_right_widget.setLayout(top_right_layout)
-
-        menubar.setCornerWidget(top_right_widget, Qt.TopRightCorner)
-
-        # Durum çubuğu
-        if self.username == "ydrc":
-            self.statusBar().showMessage(f"🛡 Login: {self.username} | Admin Mode : Active")
-        else:
-            self.statusBar().showMessage(f"Login: {self.username}")
-
-    def add_new_tab(self):
-        new_tab = BrowserTab()
-        self.tabs.addTab(new_tab, "New Tab")
-        self.tabs.setCurrentWidget(new_tab)
-
-    def close_tab(self, index):
+    def close_tab(self, i):
         if self.tabs.count() > 1:
-            self.tabs.removeTab(index)
-
-    def customize(self):
-        QMessageBox.information(self, "Customize", "Themes and options are coming soon.")
-
-    def open_account_panel(self):
-        panel = AccountPanel(self, self.username)
-        panel.exec_()
+            self.tabs.removeTab(i)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-
-    kullanici = sys.argv[1] if len(sys.argv) > 1 else "No account"
-
-    pencere = MainWindow(username=kullanici)
-    pencere.show()
-
+    user = sys.argv[1] if len(sys.argv) > 1 else "Guest"
+    window = MainWindow(username=user)
+    window.show()
     sys.exit(app.exec_())
+
