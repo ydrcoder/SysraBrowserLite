@@ -1,61 +1,41 @@
-Sysra Browser Lite 3.0
-Sysra Browser Lite 3.0 is a lightweight, customizable web browser built with Python and PyQt5. It features tabbed browsing, built-in translation, notes, and calculator plugins — all integrated into a sleek and minimal interface.
+# <img src="https://via.placeholder.com/50" width="40"> Sysra Browser Lite 4.0
 
-Features
-Tabbed browsing with back, forward, and reload controls
+**⚡ The fastest, sleekest, and most lightweight browser experience!**  
 
-URL/search bar supporting direct URLs and DuckDuckGo search queries
+Sysra Browser Lite 4.0 is built to be **minimal, stylish, and fast** — perfect for users who want speed without compromise.
 
-Integrated Plugins:
+---
 
-Sysra Translate: Supports multiple languages with instant translation
+## 🌟 Features
 
-Sysra Notes: Persistent note-taking tool saved locally
+- 🚀 **Lightweight & Fast** – Minimal memory usage and lightning-fast load times  
+- 🎨 **Sleek Interface** – Modern design with customizable themes  
+- 🔍 **Built-in Search** – Search directly from the address bar  
+- 🗂 **Tabbed Browsing** – Easy tab management with drag & drop support  
+- 🛡 **Privacy Friendly** – No trackers, no bloat  
+- 💻 **Cross-Platform** – Runs smoothly on Windows, Linux, and macOS  
 
-Sysra Calculator: Basic calculator supporting addition, subtraction, multiplication, and division
+---
 
-Light and Red themes for comfortable viewing
+## 📸 Screenshots
 
-Easy tab management with closable tabs and a quick new tab button
+<img src="https://via.placeholder.com/600x300" alt="Sysra Browser Lite Screenshot" style="max-width:100%; border-radius:8px;">
 
-Installation
-Make sure you have Python 3.6+ installed.
+---
 
-Install dependencies:
+## ⚡ Quick Start
 
-bash
-Kopyala
-Düzenle
-pip install PyQt5 PyQtWebEngine deep-translator
-Clone or download the repository.
+1. **Download** the latest release from [Releases](https://github.com/YOUR_USERNAME/SysraBrowserLite/releases)  
+2. **Extract** the files  
+3. **Run**:
+   - Windows: `SysraBrowserLite.exe`
+   - Linux/macOS: `./SysraBrowserLite`
 
-Run the main application:
+---
 
-bash
-Kopyala
-Düzenle
-python sysrabrowser.py
-Usage
-Enter URLs or search queries directly into the address bar.
+## 🛠 Installation via Git
 
-Use the plugin panel on the right to translate text, take notes, or perform calculations without leaving the browser.
-
-Save notes locally — they persist between sessions.
-
-Change the theme from the menu bar for a different look.
-
-Open new tabs with the + button, close tabs by clicking the x on each tab.
-
-File Structure
-sysrabrowser.py - Main application source code
-
-sysra_home.html - Homepage HTML file loaded on new tabs
-
-sysra_notes.txt - Local file storing saved notes
-
-Contributing
-Contributions are welcome! Feel free to submit issues or pull requests on GitHub.
-
-License
-This project is licensed under the MIT License.
-
+```bash
+git clone https://github.com/YOUR_USERNAME/SysraBrowserLite.git
+cd SysraBrowserLite
+# Run the executable or open in your preferred IDE
