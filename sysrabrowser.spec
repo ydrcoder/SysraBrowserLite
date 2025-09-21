@@ -1,11 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['sysrabrowser.py'],
     pathex=[],
     binaries=[],
-    datas=[('sysra_home.html', '.'), ('users.json', '.'), ('icon.png', '.')],
+    datas=[
+        ('sysra_home.html', '.'), 
+        ('users.json', '.'), 
+        ('icon.png', '.'), 
+        ('myapps', 'myapps')   # myapps klasörü dahil edildi
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -14,6 +18,7 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
